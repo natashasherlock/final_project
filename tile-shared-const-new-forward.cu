@@ -61,7 +61,6 @@
 
 
 __constant__ float const_mask[3136]; //largest mask size
-
 #define TILE_WIDTH 16
 __global__ void shared_tile_kernel(float *output, const float *input, const float *mask, const int Batch, const int Map_out, const int Channel, const int Height, const int Width, const int K)
 {
@@ -69,7 +68,6 @@ __global__ void shared_tile_kernel(float *output, const float *input, const floa
     Modify this function to implement the forward pass described in Chapter 16.
     We have added an additional dimension to the tensors to support an entire mini-batch
     The goal here is to be correct AND fast.
-
     Function paramter definitions:
     output - output
     input - input
@@ -95,6 +93,7 @@ __global__ void shared_tile_kernel(float *output, const float *input, const floa
     #define in_4d(i3, i2, i1, i0) input[(i3) * (Channel * Height * Width) + (i2) * (Height * Width) + (i1) * (Width) + i0]
     #define mask_4d(i3, i2, i1, i0) mask[(i3) * (Channel * K * K) + (i2) * (K * K) + (i1) * (K) + i0]
     #define const_mask_4d(i3, i2, i1, i0) const_mask[(i3) * (Channel * K * K) + (i2) * (K * K) + (i1) * (K) + i0]
+
     // Insert your GPU convolution kernel code here
 
     int TILE_SIZE = blockDim.x;
@@ -244,9 +243,10 @@ __host__ void GPUInterface::conv_forward_gpu_prolog(const float *host_output, co
     cudaMalloc((void **) device_output_ptr, (d_outputsize) * sizeof(float));
     //cudaMalloc((void **) device_mask_ptr, (d_masksize) * sizeof(float));
 
+    cudaMemcpyToSymbol(const_mask, host_mask, d_masksize * sizeof(float));
     cudaMemcpy(*device_input_ptr, host_input, (d_inputsize)* sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpyToSymbol(const_mask, host_mask, d_masksize);
-    cudaMemcpy(*device_mask_ptr, host_mask, (d_masksize)* sizeof(float), cudaMemcpyHostToDevice);
+    //cudaMemcpy(*device_mask_ptr, host_mask, (d_masksize)* sizeof(float), cudaMemcpyHostToDevice);
+
     // We pass double pointers for you to initialize the relevant device pointers,
     //  which are passed to the other two functions.
 
@@ -284,7 +284,7 @@ __host__ void GPUInterface::conv_forward_gpu_epilog(float *host_output, float *d
     // Free device memory
     cudaFree(device_input);
     cudaFree(device_output);
-    cudaFree(device_mask);
+    //cudaFree(device_mask);
 }
 
 
