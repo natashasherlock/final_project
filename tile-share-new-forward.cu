@@ -262,8 +262,8 @@ __host__ void GPUInterface::conv_forward_gpu(float *device_output, const float *
 {
     // Set the kernel dimensions and call the kernel
    
-    int W_size = ceil((float)(Width)/TILE_WIDTH); // number of horizontal tiles per output map
-    int H_size = ceil((float)(Height)/TILE_WIDTH); // number of vertical tiles per output map
+    int W_size = ceil((float)(Width - K +1)/TILE_WIDTH); // number of horizontal tiles per output map
+    int H_size = ceil((float)(Height - K +1)/TILE_WIDTH); // number of vertical tiles per output map
     int Y = H_size * W_size;
     dim3 blockDim(TILE_WIDTH, TILE_WIDTH, 1); // output tile for untiled code
     dim3 gridDim(Batch, Map_out, Y);
